@@ -8,6 +8,16 @@ This project will expose the publically available Buildkite APIs ([REST API](htt
 
 These can be consumed programmatically via module imports, or from the command line (via `npx`).
 
+## Setup
+
+A valid Buildkite API token is required for use.  You can create ane edit API Access tokens [here](https://buildkite.com/user/api-access-tokens).
+
+Once generated, add the following to your `~/.bashrc` (or equivalent):
+
+```
+export BUILDKITE_API_TOKEN="<TOKEN>"
+```
+
 ## Examples
 
 Retry all failed jobs for a build:
