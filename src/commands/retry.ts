@@ -2,10 +2,10 @@ import Buildkite from '../apis/buildkite';
 import config from '../config';
 
 const WEB_BUILD_REGEX = new RegExp(
-    `https:\/\/buildkite.com\/(\\w+)\/([\\w-]+)\/builds\/(\\d+)`
+    `https://buildkite.com/(\\w+)/([\\w-]+)/builds/(\\d+)`
 );
 const API_BUILD_REGEX = new RegExp(
-    `${config.buildkite.address}/organizations\/(\\w+)\/pipelines\/([\\w-]+)\/builds\/(\\d+)`
+    `${config.buildkite.address}/organizations/(\\w+)/pipelines/([\\w-]+)/builds/(\\d+)`
 );
 
 type APIs = {
@@ -24,7 +24,7 @@ async function forEachAsync<T>(arr: Array<T>, fn: (elem: T) => Promise<void>): P
 
 async function mapAsync<TIn, TOut>(arr: Array<TIn>, fn: (elem: TIn) => Promise<TOut>): Promise<Array<TOut>> {
     const result = [];
-    for (let elem of arr) {
+    for (const elem of arr) {
         result.push(await fn(elem));
     }
     return result;      
