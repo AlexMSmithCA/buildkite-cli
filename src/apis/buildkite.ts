@@ -1,5 +1,5 @@
-import fetch from 'node-fetch';
-import {stringify} from 'querystring';
+import fetch from "node-fetch";
+import { stringify } from "querystring";
 
 type Params = { [key: string]: string };
 
@@ -19,28 +19,40 @@ export default class Buildkite {
   async getBuild(org: string, pipeline: string, buildNumber: string) {
     return this.request(
       `organizations/${org}/pipelines/${pipeline}/builds/${buildNumber}`,
-      'GET',
-      ''
+      "GET",
+      ""
     );
   }
-    
-    async retryJob(org: string, pipeline: string, buildNumber: string, jobId: string) {
-        return this.request(
-            `organizations/${org}/pipelines/${pipeline}/builds/${buildNumber}/jobs/${jobId}/retry`,
-            'PUT',
-            ''
-          );
-    }
 
-  async request(endpoint: string, method: string, paramsOrData: Params | string) {
+  async retryJob(
+    org: string,
+    pipeline: string,
+    buildNumber: string,
+    jobId: string
+  ) {
+    return this.request(
+      `organizations/${org}/pipelines/${pipeline}/builds/${buildNumber}/jobs/${jobId}/retry`,
+      "PUT",
+      ""
+    );
+  }
+
+  async request(
+    endpoint: string,
+    method: string,
+    paramsOrData: Params | string
+  ) {
     const url = `${this.config.address}/${
-      method === 'GET'
-        ? this.parameterizeEndpoint(endpoint, typeof paramsOrData === 'string' ? undefined : paramsOrData)
+      method === "GET"
+        ? this.parameterizeEndpoint(
+            endpoint,
+            typeof paramsOrData === "string" ? undefined : paramsOrData
+          )
         : endpoint
     }`;
     const res = await this.fetch(url, {
       method: method,
-      body: method === 'POST' ? JSON.stringify(paramsOrData) : null,
+      body: method === "POST" ? JSON.stringify(paramsOrData) : null,
       headers: {
         Authorization: `Bearer ${this.config.token}`,
       },
