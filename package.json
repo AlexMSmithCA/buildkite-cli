@@ -7,12 +7,22 @@
     "buildkite-cli": "bin/cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc --noEmit"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "node-fetch": "^2.2.0",
-    "querystring": "^0.2.1"
+    "querystring": "^0.2.1",
+    "tsm": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.1",
+    "typescript": "^4.6.3"
+  },
+  "volta": {
+    "node": "17.8.0",
+    "yarn": "1.22.17"
   }
 }

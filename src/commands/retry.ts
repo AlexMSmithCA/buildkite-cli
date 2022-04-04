@@ -1,5 +1,5 @@
-const Buildkite = require('../apis/buildkite');
-const config = require('../config.js');
+import Buildkite from '../apis/buildkite';
+import config from '../config';
 
 const WEB_BUILD_REGEX = new RegExp(
     `https:\/\/buildkite.com\/(\\w+)\/([\\w-]+)\/builds\/(\\d+)`
@@ -8,51 +8,61 @@ const API_BUILD_REGEX = new RegExp(
     `${config.buildkite.address}/organizations\/(\\w+)\/pipelines\/([\\w-]+)\/builds\/(\\d+)`
 );
 
-async function initAPIs() {
+type APIs = {
+    buildkite: Buildkite
+};
+
+async function initAPIs(): Promise<APIs> {
     return {
         buildkite: new Buildkite(config.buildkite)
-    }
+    };
 }
 
-async function forEachAsync(arr, fn) {
+async function forEachAsync<T>(arr: Array<T>, fn: (elem: T) => Promise<void>): Promise<void> {
     await mapAsync(arr, fn);
 }
 
-async function mapAsync(arr, fn) {
+async function mapAsync<TIn, TOut>(arr: Array<TIn>, fn: (elem: TIn) => Promise<TOut>): Promise<Array<TOut>> {
     const result = [];
     for (let elem of arr) {
         result.push(await fn(elem));
     }
-    return result;
+    return result;      
 }
 
-async function getFailedTriggeredBuilds(api, build) {
-    const failed = build.jobs.filter(j =>
+type Build = any;
+type Job = any;
+
+async function getFailedTriggeredBuilds(api: Buildkite, build: Build) {
+    const failed = build.jobs.filter((j: Job) =>
         j.type === 'trigger' &&
         j.state === 'failed' &&
         j.triggered_build
     );
-    return await mapAsync(failed, async b => {
+    return await mapAsync(failed, async (b: Build) => {
         const [,org, pipeline, buildNumber] = b.triggered_build.url.match(API_BUILD_REGEX);
         return await api.getBuild(org, pipeline, buildNumber);
     });
 }
 
-async function retryFailedJobs(api, build) {
+async function retryFailedJobs(api: Buildkite, build: Build) {
     const [,org, pipeline, buildNumber] = build.url.match(API_BUILD_REGEX);
-    const package = build.env.PACKAGE || '';
+    const pckg = build.env.PACKAGE || '';
     forEachAsync(
-        build.jobs.filter(j => j.state === 'failed'),
-        async j => {
-            console.log(`  - Retrying ${package ? `(${package}) ` : ''}${j.web_url}`);
+        build.jobs.filter((j: Job) => j.state === 'failed'),
+        async (j: Job) => {
+            console.log(`  - Retrying ${pckg ? `(${pckg}) ` : ''}${j.web_url}`);
             await api.retryJob(org, pipeline, buildNumber, j.id);
         }
     );
 }
 
-async function retry({url}) {
+export default async function retry({url}: {url: string}) {
     if (!url) return;
-    const [,org, pipeline, buildNumber] = url.match(WEB_BUILD_REGEX);
+
+    const match = url.match(WEB_BUILD_REGEX);
+    if (!match || match.length < 4) throw new Error(`Invalid url provided: ${url}`);
+    const [, org, pipeline, buildNumber] = match;
 
     console.log("Initializing APIs...");
     const { buildkite } = await initAPIs();
@@ -69,5 +79,3 @@ async function retry({url}) {
         await retryFailedJobs(buildkite, b);
     });
 }
-
-module.exports = { retry };

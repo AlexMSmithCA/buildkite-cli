@@ -5,4 +5,5 @@ process.on('unhandledRejection', e => {
     process.exit(1);
 });
 
-require('../index.js').run(process.argv.slice(2));
+require('tsm');
+require('../src/index').run(process.argv.slice(2));

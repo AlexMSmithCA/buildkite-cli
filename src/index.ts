@@ -1,8 +1,7 @@
-const cli = require('./utils/cli.js');
+import cli from './utils/cli';
+import retry from './commands/retry';
 
-const {retry} = require('./commands/retry.js');
-
-async function run(argv) {
+export async function run(argv: Array<string>) {
     const [command, ...rest] = argv;
 
     await cli(command, rest, {
@@ -13,5 +12,3 @@ async function run(argv) {
         ]
     });
 }
-
-module.exports = { run };

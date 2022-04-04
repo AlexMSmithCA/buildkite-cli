@@ -1,17 +1,22 @@
-const fetch = require('node-fetch');
-const querystring = require('querystring');
+import fetch from 'node-fetch';
+import {stringify} from 'querystring';
 
-module.exports = class Buildkite {
-  constructor(config) {
+type Params = { [key: string]: string };
+
+export default class Buildkite {
+  config: any;
+  fetch: any;
+
+  constructor(config: any) {
     this.config = config;
     this.fetch = config.fetch || fetch;
   }
 
-  parameterizeEndpoint(endpoint, params) {
-    return params ? `${endpoint}?${querystring.stringify(params)}` : endpoint;
+  parameterizeEndpoint(endpoint: string, params: Params | undefined) {
+    return params ? `${endpoint}?${stringify(params)}` : endpoint;
   }
 
-  async getBuild(org, pipeline, buildNumber) {
+  async getBuild(org: string, pipeline: string, buildNumber: string) {
     return this.request(
       `organizations/${org}/pipelines/${pipeline}/builds/${buildNumber}`,
       'GET',
@@ -19,7 +24,7 @@ module.exports = class Buildkite {
     );
   }
     
-    async retryJob(org, pipeline, buildNumber, jobId) {
+    async retryJob(org: string, pipeline: string, buildNumber: string, jobId: string) {
         return this.request(
             `organizations/${org}/pipelines/${pipeline}/builds/${buildNumber}/jobs/${jobId}/retry`,
             'PUT',
@@ -27,10 +32,10 @@ module.exports = class Buildkite {
           );
     }
 
-  async request(endpoint, method, paramsOrData) {
+  async request(endpoint: string, method: string, paramsOrData: Params | string) {
     const url = `${this.config.address}/${
       method === 'GET'
-        ? this.parameterizeEndpoint(endpoint, paramsOrData)
+        ? this.parameterizeEndpoint(endpoint, typeof paramsOrData === 'string' ? undefined : paramsOrData)
         : endpoint
     }`;
     const res = await this.fetch(url, {
